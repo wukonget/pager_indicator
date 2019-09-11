@@ -12,7 +12,7 @@ root build.gradle添加
   
   
 引用
-	dependencies {
-	        implementation 'com.github.wukonget:pager_indicator:v0.1'
-	}
 
+	dependencies {
+	        implementation 'com.github.wukonget:pager_indicator:Tag'
+	}
