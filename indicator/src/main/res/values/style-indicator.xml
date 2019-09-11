@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="P2Indicator">
+
+        <attr name="p2Mode" format="integer">
+            <enum name="dot" value="1"/>
+            <enum name="line" value="2"/>
+            <enum name="drawable" value="3"/>
+        </attr>
+
+        <attr name="p2ItemWidth" format="dimension" />
+        <attr name="p2ItemHeight" format="dimension" />
+        <attr name="p2ItemGap" format="dimension" />
+
+        <attr name="p2NormalColor" format="color|reference"/>
+        <attr name="p2SelectedColor" format="color|reference"/>
+
+        <attr name="p2NormalDrawable" format="reference"/>
+        <attr name="p2SelectedDrawable" format="reference"/>
+
+<!--        <attr name="p2Padding" format="dimension" />-->
+<!--        <attr name="p2PaddingVertical" format="dimension" />-->
+<!--        <attr name="p2PaddingHorizontal" format="dimension" />-->
+
+    </declare-styleable>
+
+</resources>
