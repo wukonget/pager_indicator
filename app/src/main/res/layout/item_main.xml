@@ -8,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView"
-        android:textSize="20sp"
+        android:textSize="30sp"
+        android:textStyle="bold"
         android:gravity="center"
         />
 

@@ -30,4 +30,9 @@ class MainAdapter(var mContext:Context):RecyclerView.Adapter<MainAdapter.MainHol
     class MainHolder(itemView:View) : RecyclerView.ViewHolder(itemView){
         val text:TextView = itemView.textView
     }
+
+    fun setData(data:ArrayList<String>){
+        dataList = data
+        notifyDataSetChanged()
+    }
 }
