@@ -19,6 +19,11 @@
         <attr name="p2NormalDrawable" format="reference"/>
         <attr name="p2SelectedDrawable" format="reference"/>
 
+        <attr name="p2Orientation" format="integer">
+            <enum name="horizontal" value="1"/>
+            <enum name="vertical" value="2"/>
+        </attr>
+
 <!--        <attr name="p2Padding" format="dimension" />-->
 <!--        <attr name="p2PaddingVertical" format="dimension" />-->
 <!--        <attr name="p2PaddingHorizontal" format="dimension" />-->

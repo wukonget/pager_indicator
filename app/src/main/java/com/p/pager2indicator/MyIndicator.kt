@@ -18,7 +18,8 @@ class MyIndicator(context: Context, attrs:AttributeSet?, styleAttr:Int):P2Indica
         focusPosition: Int,
         focusOffset: Float,
         itemWidth:Int,
-        itemHeight:Int
+        itemHeight:Int,
+        orientation:Int
     ): Boolean {
         canvas?.drawCircle(20f,itemHeight/2.toFloat(),30f,paint)
         return true

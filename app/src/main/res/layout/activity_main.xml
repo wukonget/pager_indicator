@@ -29,9 +29,10 @@
         app:p2ItemGap="20dp"
         app:p2ItemHeight="10dp"
         app:p2ItemWidth="10dp"
-        app:p2Mode="dot"
+        app:p2Mode="line"
         app:p2NormalColor="@android:color/white"
         app:p2NormalDrawable="@drawable/ic_launcher_foreground"
+        app:p2Orientation="horizontal"
         tools:layout_editor_absoluteX="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

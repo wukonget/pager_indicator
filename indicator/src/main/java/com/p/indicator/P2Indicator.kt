@@ -19,11 +19,14 @@ import kotlin.math.min
 public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, styleAttr: Int) :
     View(mContext, attrs, styleAttr) {
 
+    private var orientation: Int = 1
     private var mViewPager: ViewPager? = null
     private var mViewPager2: ViewPager2? = null
     private var mFocusPosition: Int = 0
     private var mFocusOffset: Float = 0f
 
+    public val HORIZONTAL = 1
+    public val VERTICAL = 2
     public val DOT = 1
     public val LINE = 2
     public val DRAWABLE = 3
@@ -45,7 +48,7 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
     private lateinit var normalPaint: Paint
     private lateinit var selectedPaint: Paint
 
-    var useAnim:Boolean = false
+    var useAnim: Boolean = false
 
 
     init {
@@ -58,11 +61,19 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
             itemHeight = atts.getDimensionPixelSize(R.styleable.P2Indicator_p2ItemHeight, 20)
             itemGap = atts.getDimensionPixelSize(R.styleable.P2Indicator_p2ItemGap, 30)
 
-            normalColor = atts.getColor(R.styleable.P2Indicator_p2NormalColor, mContext.resources.getColor(android.R.color.darker_gray))
-            selectedColor = atts.getColor(R.styleable.P2Indicator_p2SelectedColor, mContext.resources.getColor(android.R.color.holo_blue_light))
+            normalColor = atts.getColor(
+                R.styleable.P2Indicator_p2NormalColor,
+                mContext.resources.getColor(android.R.color.darker_gray)
+            )
+            selectedColor = atts.getColor(
+                R.styleable.P2Indicator_p2SelectedColor,
+                mContext.resources.getColor(android.R.color.holo_blue_light)
+            )
 
             normalDrawable = atts.getResourceId(R.styleable.P2Indicator_p2NormalDrawable, 0)
             selectedDrawable = atts.getResourceId(R.styleable.P2Indicator_p2SelectedDrawable, 0)
+
+            orientation = atts.getInt(R.styleable.P2Indicator_p2Orientation, 1)
 
             atts.recycle()
         }
@@ -92,7 +103,11 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
         when (widthMode) {
             MeasureSpec.AT_MOST -> {
                 widthSize =
-                    itemWidth * itemCount + itemGap * (itemCount - 1) + paddingLeft + paddingRight
+                    if (orientation == HORIZONTAL)
+                        itemWidth * itemCount + itemGap * (itemCount - 1) + paddingLeft + paddingRight
+                    else
+                        itemWidth + paddingLeft + paddingRight
+
             }
             MeasureSpec.EXACTLY -> {
             }
@@ -101,7 +116,10 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
         }
         when (heightMode) {
             MeasureSpec.AT_MOST -> {
-                heightSize = itemHeight + paddingTop + paddingBottom
+                heightSize = if (orientation == HORIZONTAL)
+                    itemHeight + paddingTop + paddingBottom
+                else
+                    itemHeight * itemCount + itemGap * (itemCount - 1) + paddingTop + paddingBottom
             }
             MeasureSpec.EXACTLY -> {
             }
@@ -116,12 +134,19 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        val allViewWidth =
-            itemWidth * itemCount + itemGap * (itemCount - 1) + paddingLeft + paddingRight
+        val allViewLength =
+            if (orientation == HORIZONTAL)
+                itemWidth * itemCount + itemGap * (itemCount - 1) + paddingLeft + paddingRight
+            else
+                itemWidth * itemCount + itemGap * (itemCount - 1) + paddingTop + paddingBottom
 
-        var startX = (width - allViewWidth) / 2.toFloat() + paddingLeft
+        val startX =
+            if (orientation == HORIZONTAL) (width - allViewLength) / 2.toFloat() + paddingLeft else paddingLeft.toFloat()
 
-        canvas?.translate(startX, paddingTop.toFloat())
+        val startY =
+            if (orientation == HORIZONTAL) paddingTop.toFloat() else (height - allViewLength) / 2.toFloat() + paddingTop
+
+            canvas?.translate(startX, startY)
 
         drawStatic(canvas)
         drawFocus(canvas)
@@ -130,10 +155,18 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
 
     private fun drawFocus(canvas: Canvas?) {
         canvas?.save()
-        canvas?.translate(
-            (itemWidth + itemGap) * mFocusPosition.toFloat() + mFocusOffset * (itemGap + itemWidth),
-            0f
-        )
+        if(orientation == HORIZONTAL) {
+            canvas?.translate(
+                (itemWidth + itemGap) * mFocusPosition.toFloat() + mFocusOffset * (itemGap + itemWidth),
+                0f
+            )
+        }else{
+            canvas?.translate(
+                0f,
+                (itemHeight + itemGap) * mFocusPosition.toFloat() + mFocusOffset * (itemGap + itemHeight)
+
+            )
+        }
         drawItemsFocus(canvas, selectedPaint)
         canvas?.restore()
     }
@@ -172,10 +205,10 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 LINE -> {
                     paint.strokeWidth = itemHeight.toFloat()
                     canvas?.drawLine(
+                        itemWidth / 2.toFloat(),
                         0f,
-                        itemHeight / 2.toFloat(),
-                        itemWidth.toFloat(),
-                        itemHeight / 2.toFloat(),
+                        itemWidth / 2.toFloat(),
+                        itemHeight.toFloat(),
                         paint
                     )
                 }
@@ -187,7 +220,11 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 }
             }
 
-            canvas?.translate((itemWidth + itemGap).toFloat(), 0f)
+            if(orientation == HORIZONTAL) {
+                canvas?.translate((itemWidth + itemGap).toFloat(), 0f)
+            }else{
+                canvas?.translate(0f,(itemHeight + itemGap).toFloat())
+            }
         }
     }
 
@@ -204,11 +241,21 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
             drawable =
                 mContext.resources.getDrawable(if (paint == normalPaint) normalDrawable else selectedDrawable)
                     .toBitmap(itemWidth, itemHeight)
-        } else if(mode == LINE) {
+        } else if (mode == LINE && useAnim) {
             scale = 1 + min(((0.5 - abs(mFocusOffset - 0.5)) * 4).toFloat(), 1f)
         }
 
-        if(!customDrawFocusItem(canvas,paint,mode,mFocusPosition,mFocusOffset,itemWidth,itemHeight)) {
+        if (!customDrawFocusItem(
+                canvas,
+                paint,
+                mode,
+                mFocusPosition,
+                mFocusOffset,
+                itemWidth,
+                itemHeight,
+                orientation
+            )
+        ) {
             when (mode) {
                 DOT -> {
                     paint.strokeWidth = 1f
@@ -216,35 +263,67 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         val path = Path()
                         if (useAnim && mFocusOffset > 0f && mFocusOffset < 0.25f) {//离左侧item近
-                            path.addArc(
-                                0f, 0f, itemWidth.toFloat(),
-                                itemHeight.toFloat(),
-                                270f,
-                                180f
-                            )
-                            path.addArc(
-                                0 - (itemWidth + itemGap) * mFocusOffset,
-                                0f,
-                                itemWidth.toFloat() + (itemWidth + itemGap) * mFocusOffset,
-                                itemHeight.toFloat(),
-                                90f,
-                                180f
-                            )
-
+                            if(orientation == HORIZONTAL) {
+                                path.addArc(
+                                    0f, 0f, itemWidth.toFloat(),
+                                    itemHeight.toFloat(),
+                                    270f,
+                                    180f
+                                )
+                                path.addArc(
+                                    0 - (itemWidth + itemGap) * mFocusOffset,
+                                    0f,
+                                    itemWidth.toFloat() + (itemWidth + itemGap) * mFocusOffset,
+                                    itemHeight.toFloat(),
+                                    90f,
+                                    180f
+                                )
+                            }else{
+                                path.addArc(
+                                    0f, 0f, itemWidth.toFloat(),
+                                    itemHeight.toFloat(),
+                                    0f,
+                                    180f
+                                )
+                                path.addArc(
+                                    0f,
+                                    0 - (itemHeight + itemGap) * mFocusOffset,
+                                    itemWidth.toFloat(),
+                                    itemHeight.toFloat() + (itemHeight + itemGap) * mFocusOffset,
+                                    180f,
+                                    180f
+                                )
+                            }
                         } else if (useAnim && mFocusOffset > 0.75f && mFocusOffset < 1f) {//离右侧item近
-                            path.addArc(
-                                0f, 0f, itemWidth.toFloat(), itemHeight.toFloat(),
-                                90f,
-                                180f
-                            )
-                            path.addArc(
-                                0 - (itemWidth + itemGap) * (1 - mFocusOffset),
-                                0f,
-                                itemWidth.toFloat() + (itemWidth + itemGap) * (1 - mFocusOffset),
-                                itemHeight.toFloat(),
-                                270f,
-                                180f
-                            )
+                            if(orientation == HORIZONTAL) {
+                                path.addArc(
+                                    0f, 0f, itemWidth.toFloat(), itemHeight.toFloat(),
+                                    90f,
+                                    180f
+                                )
+                                path.addArc(
+                                    0 - (itemWidth + itemGap) * (1 - mFocusOffset),
+                                    0f,
+                                    itemWidth.toFloat() + (itemWidth + itemGap) * (1 - mFocusOffset),
+                                    itemHeight.toFloat(),
+                                    270f,
+                                    180f
+                                )
+                            }else{
+                                path.addArc(
+                                    0f, 0f, itemWidth.toFloat(), itemHeight.toFloat(),
+                                    180f,
+                                    180f
+                                )
+                                path.addArc(
+                                    0f,
+                                    0 - (itemHeight + itemGap) * (1 - mFocusOffset),
+                                    itemWidth.toFloat(),
+                                    itemHeight.toFloat() + (itemHeight + itemGap) * (1 - mFocusOffset),
+                                    0f,
+                                    180f
+                                )
+                            }
                         } else {
                             canvas?.drawOval(
                                 0f,
@@ -267,13 +346,23 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 }
                 LINE -> {
                     paint.strokeWidth = itemHeight.toFloat() / scale
-                    canvas?.drawLine(
-                        0f,
-                        itemHeight / 2.toFloat(),
-                        itemWidth * scale,
-                        itemHeight / 2.toFloat(),
-                        paint
-                    )
+                    if(orientation == HORIZONTAL) {
+                        canvas?.drawLine(
+                            0f,
+                            itemHeight / 2.toFloat(),
+                            itemWidth * scale,
+                            itemHeight / 2.toFloat(),
+                            paint
+                        )
+                    }else{
+                        canvas?.drawLine(
+                            itemWidth / 2.toFloat(),
+                            0f,
+                            itemWidth / 2.toFloat(),
+                            itemHeight * scale,
+                            paint
+                        )
+                    }
                 }
                 DRAWABLE -> {
                     paint.strokeWidth = 1f
@@ -287,6 +376,12 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
 
     /**
      * 用户自己完成item绘制
+     * @param mode item形状 DOT,LINE,DRAWABLE
+     * @param focusPosition 当前页面
+     * @param focusOffset  当前页面偏移量  0~1f
+     * @param itemHeight
+     * @param itemWidth
+     * @param orientation 方向,1水平  2垂直
      */
     open fun customDrawFocusItem(
         canvas: Canvas?,
@@ -294,8 +389,9 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
         mode: Int,
         focusPosition: Int,
         focusOffset: Float,
-        itemWidth:Int,
-        itemHeight:Int
+        itemWidth: Int,
+        itemHeight: Int,
+        orientation:Int
     ): Boolean {
         return false
     }
@@ -315,7 +411,7 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 postInvalidate()
             }
         })
-        viewPager.adapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+        viewPager.adapter?.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
                 update(false)
                 super.onChanged()
@@ -325,8 +421,9 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
     }
 
     private fun update(onlyDraw: Boolean = true) {
-        itemCount = if(mViewPager!=null) mViewPager!!.adapter!!.count else (if(mViewPager2!=null) mViewPager2!!.adapter!!.itemCount else 1)
-        if(onlyDraw) postInvalidate() else requestLayout()
+        itemCount =
+            if (mViewPager != null) mViewPager!!.adapter!!.count else (if (mViewPager2 != null) mViewPager2!!.adapter!!.itemCount else 1)
+        if (onlyDraw) postInvalidate() else requestLayout()
     }
 
     fun bindViewPager(viewPager: ViewPager) {
@@ -348,7 +445,7 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 postInvalidate()
             }
         })
-        viewPager.adapter?.registerDataSetObserver(object :DataSetObserver(){
+        viewPager.adapter?.registerDataSetObserver(object : DataSetObserver() {
             override fun onChanged() {
                 update(false)
                 super.onChanged()
