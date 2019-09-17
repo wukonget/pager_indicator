@@ -202,13 +202,23 @@ public open class P2Indicator(var mContext: Context, attrs: AttributeSet?, style
                 }
                 LINE -> {
                     paint.strokeWidth = itemHeight.toFloat()
-                    canvas?.drawLine(
-                        itemWidth / 2.toFloat(),
-                        0f,
-                        itemWidth / 2.toFloat(),
-                        itemHeight.toFloat(),
-                        paint
-                    )
+                    if(orientation == HORIZONTAL) {
+                        canvas?.drawLine(
+                            0f,
+                            itemHeight / 2.toFloat(),
+                            itemWidth.toFloat(),
+                            itemHeight / 2.toFloat(),
+                            paint
+                        )
+                    }else{
+                        canvas?.drawLine(
+                            itemWidth / 2.toFloat(),
+                            0f,
+                            itemWidth / 2.toFloat(),
+                            itemHeight.toFloat(),
+                            paint
+                        )
+                    }
                 }
                 DRAWABLE -> {
                     paint.strokeWidth = 1f
