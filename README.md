@@ -14,7 +14,7 @@ root build.gradle添加
 引用
 
 	dependencies {
-	        implementation 'com.github.wukonget:pager_indicator:v0.2'
+	        implementation 'com.github.wukonget:pager_indicator:v0.3'
 	}
 
 
