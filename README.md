@@ -14,7 +14,7 @@ root build.gradle添加
 引用
 
 	dependencies {
-	        implementation 'com.github.wukonget:pager_indicator:v0.1'
+	        implementation 'com.github.wukonget:pager_indicator:v0.2'
 	}
 
 
@@ -54,7 +54,7 @@ root build.gradle添加
     p2Orientation : 控件方向  horizontal  vertical
 
 
-    提供一个方法供用户自定义绘制当前标识
+提供一个方法供用户自定义绘制当前标识
 
     /**
          * 用户自己完成item绘制
