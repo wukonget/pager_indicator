@@ -3,15 +3,13 @@ package com.p.indicator
 import android.content.Context
 import android.database.DataSetObserver
 import android.graphics.*
+import android.os.Build
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.drawable.toBitmap
-import androidx.viewpager2.widget.ViewPager2
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.os.Build
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import kotlin.math.abs
 import kotlin.math.min
 
